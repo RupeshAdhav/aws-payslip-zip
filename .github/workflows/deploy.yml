@@ -1,34 +1,52 @@
+# .github/workflows/deploy.yml
+name: Asynchronous Payslip Pipeline Automated Deployer
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   cdk-continuous-deployment:
+    name: Build Stack Assets & Sync to AWS
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout Code Blueprint Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize Node.js 20 Environment
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      # ================= FIXED BLOCK =================
+      - name: Authenticate Programmatic AWS Sessions
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1
+          aws-region: eu-north-1 # <--- CRITICAL: Force GitHub to deploy straight to Stockholm!
+      # ===============================================
 
-      - run: npm install
+      - name: Install Project Workspace Root Dependencies
+        run: npm install
 
-      - run: |
+      - name: Restore Isolated Background Lambda Worker Node Modules
+        run: |
           cd src/process
           npm install
 
-      - run: npm run build
+      - name: Compile Infrastructure TypeScript Stack Code
+        run: npm run build
 
       - name: Bootstrap CDK Environment
         run: npx cdk bootstrap aws://455697799413/eu-north-1
 
-      - name: Deploy CDK Stack
+      - name: Run Direct CDK Infrastructure Synthesis & Cloud Deployment
         run: npx cdk deploy --require-approval never --method=direct
         env:
           SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
           SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
-          SF_LOGIN_URL: ${{ secrets.SF_LOGIN_URL }}
+          SF_LOGIN_URL: ${{ secrets.SF_LOGIN_URL }} 
