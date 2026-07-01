@@ -1,9 +1,10 @@
+# .github/workflows/deploy.yml
 name: Asynchronous Payslip Pipeline Automated Deployer
 
 on:
   push:
     branches:
-      - main # Automatically runs the build/deployment sequence every time you push onto main
+      - main
 
 jobs:
   cdk-continuous-deployment:
@@ -11,44 +12,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Pull down the clean repository branch snapshot onto the GitHub runner machine disk
       - name: Checkout Code Blueprint Repository
         uses: actions/checkout@v4
 
-      # 2. Setup a standardized Node.js runtime execution environment matching your setup
       - name: Initialize Node.js 20 Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # 3. Securely authenticate the runner context utilizing the GitHub Vault secrets mapped in Step 2
+      # ================= FIXED BLOCK =================
       - name: Authenticate Programmatic AWS Sessions
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1 # Ensure this matches your active operational region (e.g. eu-north-1)
+          aws-region: eu-north-1 # <--- CRITICAL: Force GitHub to deploy straight to Stockholm!
+      # ===============================================
 
-      # 4. Install top-level root CDK system modules 
       - name: Install Project Workspace Root Dependencies
         run: npm install
 
-      # 5. Navigate straight into your background worker folder to cleanly isolate and install code requirements
       - name: Restore Isolated Background Lambda Worker Node Modules
         run: |
           cd src/process
           npm install
 
-      # 6. Verify and compile your core Infrastructure Stack classes
       - name: Compile Infrastructure TypeScript Stack Code
         run: npm run build
 
-      # 7. Package code modules natively using esbuild and deploy directly via programmatic direct CloudFormation synchronization
       - name: Run Direct CDK Infrastructure Synthesis & Cloud Deployment
         run: npx cdk deploy --require-approval never --method=direct
         env:
-          # Injects GitHub Repository Secrets into temporary deployment Shell variables
           SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
           SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
           SF_LOGIN_URL: ${{ secrets.SF_LOGIN_URL }} 
