@@ -6,17 +6,18 @@ export const handler = async (event) => {
     const body = typeof event.body === 'string' ? JSON.parse(event.body) : (event.body || {});
     const recordId = body.recordId;
     const objectType = body.objectType;
+    const orgName = body.orgName;
 
-    if (!objectType || !recordId) {
+    if (!objectType || !recordId || !orgName) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Missing objectType or recordId' }) 
+            body: JSON.stringify({ error: 'Missing objectType, recordId, or orgName' }) 
         };
     }
 
     await sqsClient.send(new SendMessageCommand({
         QueueUrl: process.env.SQS_QUEUE_URL,
-        MessageBody: JSON.stringify({ recordId: recordId, objectType: objectType })
+        MessageBody: JSON.stringify({ recordId: recordId, objectType: objectType, orgName: orgName })
     }));
 
     return {
