@@ -197,7 +197,7 @@ function sanitizeFileName(file) {
 }
 
 function getS3TargetDetails(safeObjectType, safeRecordId) {
-    const objectName = safeObjectType === 'Pay_Period__c' ? 'PayPeriod' : safeObjectType;
+    const objectName = safeObjectType === 'PayPeriod__c' ? 'PayPeriod' : safeObjectType;
     const zipTitle = `Payslips_${safeRecordId}.zip`;
     return {
         zipTitle,
