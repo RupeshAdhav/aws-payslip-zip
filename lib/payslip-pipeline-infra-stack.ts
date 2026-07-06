@@ -79,8 +79,6 @@ export class PayslipPipelineInfraStack extends cdk.Stack {
     const initLambda = new lambda.Function(this, 'InitPayslipZipFunction', {
       functionName: 'init-payslip-zip_iac',
       runtime: lambda.Runtime.NODEJS_20_X,
-      // FIXED: When deploying an un-bundled raw .mjs asset, the mapping pointer 
-      // is always 'index.handler'. Node natively figures out the extension.
       handler: 'index.handler', 
       code: lambda.Code.fromAsset(path.join(__dirname, '../src/init')),
       timeout: cdk.Duration.seconds(30),
@@ -96,23 +94,18 @@ export class PayslipPipelineInfraStack extends cdk.Stack {
     const processLambda = new lambdaNodejs.NodejsFunction(this, 'ProcessPayslipZipFunction', {
       functionName: 'process-payslip-zip-iac',
       runtime: lambda.Runtime.NODEJS_20_X,
-      
-      // Points esbuild straight to your local source module file path
       entry: path.join(__dirname, '../src/process/index.mjs'),
-      
-      // FIXED: NodejsFunction bundles dependencies down into a final "index.js" zip,
-      // so your entry point configuration string target must remain 'handler'
       handler: 'handler', 
-      
-      // REMOVED: 'code: lambda.Code.fromAsset(...)' -> This was breaking bundling configurations.
-      
       timeout: cdk.Duration.minutes(15), 
       memorySize: 2048,                 
       environment: {
         AWS_PAYSLIP_BUCKET: archiveBucket.bucketName,
-        SF_CLIENT_ID: process.env.SF_CLIENT_ID || '',
-        SF_CLIENT_SECRET: process.env.SF_CLIENT_SECRET || '',
-        SF_LOGIN_URL: process.env.SF_LOGIN_URL || ''
+        SF_PROD_LOGIN_URL: process.env.SF_PROD_LOGIN_URL || '',
+        SF_PROD_CLIENT_ID: process.env.SF_PROD_CLIENT_ID || '',
+        SF_PROD_CLIENT_SECRET: process.env.SF_PROD_CLIENT_SECRET || '',
+        SF_SANDBOX_LOGIN_URL: process.env.SF_SANDBOX_LOGIN_URL || '',
+        SF_SANDBOX_CLIENT_ID: process.env.SF_SANDBOX_CLIENT_ID || '',
+        SF_SANDBOX_CLIENT_SECRET: process.env.SF_SANDBOX_CLIENT_SECRET || ''
       },
       bundling: {
         minify: true, 
@@ -143,7 +136,7 @@ export class PayslipPipelineInfraStack extends cdk.Stack {
       integration: apiIntegration,
     });
 
-    // --- Output Parameters Manifest ---
+    // --- Output ---
     new cdk.CfnOutput(this, 'ApiGatewayWebhookUrl', {
       value: `${httpApiGateway.apiEndpoint}/init-zip`,
       description: 'The secure processing entry webhook URL to configure within Salesforce Apex callout classes.',
