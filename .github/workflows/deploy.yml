@@ -47,6 +47,9 @@ jobs:
       - name: Run Direct CDK Infrastructure Synthesis & Cloud Deployment
         run: npx cdk deploy --require-approval never --method=direct
         env:
-          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
-          SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
-          SF_LOGIN_URL: ${{ secrets.SF_LOGIN_URL }} 
+          SF_PROD_LOGIN_URL: ${{ secrets.SF_PROD_LOGIN_URL }} 
+          SF_PROD_CLIENT_ID: ${{ secrets.SF_PROD_CLIENT_ID }}
+          SF_PROD_CLIENT_SECRET: ${{ secrets.SF_PROD_CLIENT_SECRET }}
+          SF_SANDBOX_LOGIN_URL: ${{ secrets.SF_SANDBOX_LOGIN_URL }}
+          SF_SANDBOX_CLIENT_ID: ${{ secrets.SF_SANDBOX_CLIENT_ID }}
+          SF_SANDBOX_CLIENT_SECRET: ${{ secrets.SF_SANDBOX_CLIENT_SECRET }}
