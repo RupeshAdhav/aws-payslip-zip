@@ -24,6 +24,20 @@ export class PayslipPipelineInfraStack extends cdk.Stack {
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY, 
+      lifecycleRules: [
+        {
+          id: 'AutoPurgeContactExportsAfterOneMonth',
+          enabled: true,
+          prefix: 'exports/Contact/', // Targets objects inside the virtual Contact folder tree
+          expiration: Duration.days(30), // Automatically drops items after 30 days
+        },
+        {
+          id: 'AutoPurgePayPeriodExportsAfterOneMonth',
+          enabled: true,
+          prefix: 'exports/PayPeriod/', // Targets objects inside the virtual PayPeriod folder tree
+          expiration: Duration.days(30),
+        }
+      ]
     });
 
     // 2. Asynchronous Decoupling SQS Queue with a Dead-Letter Queue (DLQ)

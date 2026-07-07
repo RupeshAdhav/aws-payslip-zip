@@ -28,7 +28,6 @@ async function processZipping(safeObjectType, safeRecordId, safeOrgName) {
     let conn; 
     try {
         conn = await getSalesforceConnection(safeOrgName);
-        console.log('Successfully authenticated to Salesforce Org');
 
         // 1. Fetch ContentDocumentIds linked to the record
         const uniqueDocIds = await fetchLinkedDocumentIds(conn, safeRecordId);
@@ -62,14 +61,12 @@ async function processZipping(safeObjectType, safeRecordId, safeOrgName) {
 
         // 5. Upload payload bundle into target AWS S3 bucket
         await uploadZipToS3(zipBuffer, s3Key);
-        console.log('# S3 upload successful');
 
         // 6. Report successful operation sync updates back to Salesforce
         const successMessage = `Successfully processed and packed ${totalCompressedFiles} payslips into S3 storage.`;
         await updateSalesforceStatus(conn, safeObjectType, safeRecordId, 'Success', successMessage);
 
     } catch (error) {
-        console.error('# Background Processing Exception:', error);
         if (conn) {
             const failureMessage = `Failure Context: ${error.message}`;
             await updateSalesforceStatus(conn, safeObjectType, safeRecordId, 'Error', failureMessage);
