@@ -28,14 +28,14 @@ export class PayslipPipelineInfraStack extends cdk.Stack {
         {
           id: 'AutoPurgeContactExportsAfterOneMonth',
           enabled: true,
-          prefix: 'exports/Contact/', // Targets objects inside the virtual Contact folder tree
-          expiration: Duration.days(30), // Automatically drops items after 30 days
+          prefix: 'exports/Contact/',
+          expiration: cdk.Duration.days(30),
         },
         {
           id: 'AutoPurgePayPeriodExportsAfterOneMonth',
           enabled: true,
-          prefix: 'exports/PayPeriod/', // Targets objects inside the virtual PayPeriod folder tree
-          expiration: Duration.days(30),
+          prefix: 'exports/PayPeriod/',
+          expiration: cdk.Duration.days(30),
         }
       ]
     });
